@@ -1,3 +1,8 @@
+# v0.1.2 (2024-07-26)
+
+- Usage guide edited in `README.md`
+- Usage code edited in `README.md`
+
 # v0.1.1 (2024-07-26)
 
 - edited version on `Cargo.toml`

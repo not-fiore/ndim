@@ -38,16 +38,16 @@ ndim = { git = "https://github.com/noobsiecoder/ndim.git" }
 Here's a simple example of how to use `NDim`:
 
 ```rust
-use ndim::NdArray;
+use ndim::core::NdArray;
 
 fn main() {
     // Create an NdArray filled with a specific value
     let shape = [3, 2];
-    let array = NdArray::<i32, 2>::zeros(&shape);
+    let array = NdArray::<i32, 2>::zeros(shape);
 
     // Print the array
-    for i in 0..array.len[0] {
-        for i in 0..array.len[1] {
+    for i in 0..array.shape()[0] {
+        for j in 0..array.shape()[1] {
             println!("{}", array[[i, j]]); // access the value from memory
         }
     }
@@ -56,7 +56,7 @@ fn main() {
 
 ## Documentation
 
-Detailed documentation is available on [docs.rs](https://docs.rs/ndim). You can also generate the documentation locally using `cargo doc`.
+Detailed documentation is available on [docs.rs](https://docs.rs/ndim).
 
 ## Contributing
 
