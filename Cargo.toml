@@ -1,6 +1,6 @@
 [package]
 name = "ndim"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "N-dimensional array for numerals in Rust similar to NumPy"
 repository = "https://github.com/noobsiecoder/ndim"
