@@ -30,7 +30,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ndim = { git = "https://github.com/noobsiecoder/ndim-rust.git" }
+ndim = { git = "https://github.com/noobsiecoder/ndim.git" }
 ```
 
 ## Usage
