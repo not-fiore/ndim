@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![crates.io](https://img.shields.io/crates/v/ndim.svg)](https://crates.io/)
 [![Documentation](https://docs.rs/image/badge.svg)](https://docs.rs/ndim)
-[![Build Status](https://github.com/noosiecoder/ndim/actions/workflows/rust.yaml/badge.svg)](https://github.com/noobsiecoder/ndim/actions)
+[![Build Status](https://github.com/noobsiecoder/ndim/actions/workflows/rust.yaml/badge.svg)](https://github.com/noobsiecoder/ndim/actions)
 
 ## Overview
 
