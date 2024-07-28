@@ -1,3 +1,7 @@
+# v0.1.2 (2024-07-27)
+
+- Edited docs in `core.rs`, `lib.rs` and `zeros_ones.rs`
+
 # v0.1.2 (2024-07-26)
 
 - Usage guide edited in `README.md`
