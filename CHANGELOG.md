@@ -1,11 +1,12 @@
 # v0.1.2 (2024-07-27)
 
-- Edited docs in `core.rs`, `lib.rs` and `zeros_ones.rs`
+- edited docs in `core.rs`, `lib.rs` and `zeros_ones.rs`
+- updated `core::NdArray::size_from_shape()` to a one line code
 
 # v0.1.2 (2024-07-26)
 
-- Usage guide edited in `README.md`
-- Usage code edited in `README.md`
+- usage guide edited in `README.md`
+- usage code edited in `README.md`
 
 # v0.1.1 (2024-07-26)
 
