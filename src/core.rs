@@ -8,7 +8,7 @@ const USIZE_ONE: usize = 1;
 /// Type alias for `[usize; N]`. Typically used in `shape` and `strides` of an NdArray object
 type SizedArray<const N: usize> = [usize; N];
 
-/// Used in the creation of N-dimensional arrays
+/// Use to allocate an N-dimensional array of type T. In the memory, the sized array is stored as a 1-d contiguous array
 ///
 /// ## Examples
 ///
@@ -22,7 +22,7 @@ type SizedArray<const N: usize> = [usize; N];
 /// # }
 /// ```
 ///
-/// #### Create using Range function
+/// #### Create an NdArray using Range function
 ///
 /// ```
 /// use ndim::core::{NdArray, Array3};
@@ -33,7 +33,7 @@ type SizedArray<const N: usize> = [usize; N];
 /// # }
 /// ```
 ///
-/// #### Reshape, Access data from an index of the NdArray
+/// #### Reshape an NdArray, and access data from its index
 ///
 /// ```
 /// use ndim::core::{NdArray, Array3};
@@ -41,7 +41,7 @@ type SizedArray<const N: usize> = [usize; N];
 /// # fn main() {
 /// let range: usize = u16::MAX as usize;
 /// let mut shape: [usize; 3] = [1, 1, range];
-/// let mut data: NdArray<u16, 3> = Array3::<u16>::arange(range); // create a NdArray ranging from 0..66535
+/// let mut data: NdArray<u16, 3> = Array3::<u16>::arange(range); // create an NdArray ranging from 0..65535
 /// assert_eq!(*data.shape(), shape);
 ///
 /// shape = [3, 5, 4369];
@@ -50,7 +50,19 @@ type SizedArray<const N: usize> = [usize; N];
 /// # }
 /// ```
 ///
-/// For more examples, view this link on [github](https://github.com/noobsiecoder/ndim)
+/// #### Panics when accessing an invalid memory address
+///
+/// ```should_panic
+/// use ndim::core::{NdArray, Array2};
+///
+/// # fn main() {
+/// let shape = [2, 2];
+/// let data = Array2::<u16>::ones(shape);
+/// data[[2, 2]]; // Panics: Index out of bounds
+/// # }
+/// ```
+///
+/// For more examples, view this link on [github](https://github.com/noobsiecoder/ndim/tree/main/examples)
 #[derive(Debug)]
 pub struct NdArray<T, const N: usize> {
     ptr: *mut T,
@@ -59,23 +71,23 @@ pub struct NdArray<T, const N: usize> {
     strides: SizedArray<N>,
 }
 
-/// Type alias for a one Dimensional (1-D) array
+/// Type alias for a one dimensional (1-D) array
 pub type Array<T> = NdArray<T, 1>;
-/// Type alias for a two Dimensional (2-D) array
+/// Type alias for a two dimensional (2-D) array
 pub type Array2<T> = NdArray<T, 2>;
-/// Type alias for a three Dimensional (3-D) array
+/// Type alias for a three dimensional (3-D) array
 pub type Array3<T> = NdArray<T, 3>;
-/// Type alias for a four Dimensional (4-D) array
+/// Type alias for a four dimensional (4-D) array
 pub type Array4<T> = NdArray<T, 4>;
 
 impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
-    /// Calculate the stride of the array from the given `shape` and return in type `SizedArray<N>`
-    /// Helps in index navigation and the explanation is shown [here](https://github.com/noobsiecoder/ndim)
+    /// Calculate the stride of the array from the given `shape` and return as type `SizedArray<N>`
+    /// Helps in index navigation and the explanation is shown [here](https://github.com/noobsiecoder/ndim/blob/main/src/core.rs#L78)
     fn stride(shape: &SizedArray<N>) -> SizedArray<N> {
         let mut strides: SizedArray<N> = [1usize; N];
         strides[N - 1] = std::mem::size_of::<T>();
         for idx in (0..N - 1).rev() {
-            // shape: [1, 2, 3]
+            // Suppose shape: [1, 2, 3]
             // strides[0] = size_of<T>
             // strides[1] = strides[0] * shape[0] -> size_of<T> * 3
             // strides[2] = strides[1] * shape[1] -> size_of<T> * 3 * 2
@@ -89,18 +101,13 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
         strides
     }
 
-    /// Calulate the size of the array from the given `shape` and return in `usize`
+    /// Calulate the size of the array from the given `shape` and return as `usize`
     fn size_from_shape(shape: &SizedArray<N>) -> usize {
-        let mut t_size: usize = 1;
-        for val in *shape {
-            t_size *= val;
-        }
-
-        t_size
+        shape.iter().product()
     }
 
-    /// Calulate the size of the array from the given `range`, `step` and return in `usize`
-    /// Explanation behind the calculation can be viewed [here](https://github.com/noobsiecoder/ndim)
+    /// Calulate the size of the array from the given `range`, `step` and return as `usize`
+    /// Explanation behind the calculation can be viewed [here](https://github.com/noobsiecoder/ndim/blob/main/src/core.rs#L111)
     fn size_from_range(pos: (isize, isize), step: usize) -> usize {
         let range: usize = (pos.1 - pos.0).abs() as usize;
         // Avoid Zero Division Error
@@ -142,22 +149,24 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
         }
     }
 
-    /// Returns the length of the NdArray object's sized array
+    /// Return the length of the NdArray object's sized array
     pub fn len(&self) -> &usize {
         &self.len
     }
 
-    /// Returns the shape of the NdArray object
+    /// Return the shape of the NdArray object
     pub fn shape(&self) -> &SizedArray<N> {
         &self.shape
     }
 
-    /// Returns stride of the NDArray object
+    /// Return the stride of the NDArray object
     pub fn strides(&self) -> &SizedArray<N> {
         &self.strides
     }
 
-    /// Creates an empty NdArray object. Requires shape size of N` to determine the dimension of the array
+    /// Create an empty NdArray object. The size of the NdArray is zero, the shape is equal to `[1; N]`, and the stride is equal to `[1; N]`.
+    ///
+    /// The reason to initialize shape and stride as `[1usize; N]` is because the shape is unknown when creating an NdArray using `NdArray::<T, N>::new()`. Hence, stride also takes the same value.
     ///
     /// ## Example
     ///
@@ -179,7 +188,7 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
         }
     }
 
-    /// Creates a NdArray object from a sized T. Requires shape of size `N`
+    /// Create an NdArray from a sized array of type T. Requires shape of size `N`
     ///
     /// ## Panics
     /// If shape is not equivalent to current array size (or length), panics, and returns **Shape(`shape`) don't match with current Size(`size`)**
@@ -213,10 +222,10 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
         }
     }
 
-    /// Reshape the sized array for a new shape of type `SizedArray<N>`
+    /// Reshape the NdArray to a new shape. Accepts an sized array `[usize; N]`
     ///
     /// ## Panics
-    /// If new (given as an argument) shape is not equivalent to current array size (or length), panics, and returns **New Shape(`shape`) don't match with current Size(`size`)**
+    /// If new (given as an argument) shape is not equivalent to current array size (or length), panics; message shown is **New Shape(`shape`) don't match with current Size(`size`)**
     ///
     /// ## Example
     ///
@@ -253,8 +262,8 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
     /// - `end` will not be included while creating the array. Hence the array range is `start..=(end - 1)`
     ///
     /// ## Panics
-    /// - May panic if `start > end`, and returns **Index out of bound**
-    /// - If `T::from(i)` conversion fails, panics, and returns **Unable to convert to type T**
+    /// - May panic if `start > end`; message shown is **Index out of bound**
+    /// - If `T::from(i)` conversion fails, panics; message shown is **Unable to convert to type T**
     ///
     /// ## Example
     ///
@@ -314,7 +323,7 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
     /// - `end` will not be included while creating the array. Hence the array range is `start..=(end - 1)`
     ///
     /// ## Panics
-    /// Check `NdArray<T, N>::range(...)`
+    /// Check function `NdArray<T, N>::range(...)` or click [here](https://github.com/noobsiecoder/ndim/blob/main/src/core.rs#L271)
     ///
     /// ## Example
     ///
@@ -335,11 +344,14 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
         Self::range((0, range as isize, 0))
     }
 
-    /// Create a sized array with an `end` value starting from 0 within `usize` range and a step value of range `usize`
+    /// Create a sized array with an `end` value starting from 0 within `usize` range and a step value of range in `usize`
     ///
     /// ## Note
     /// - Accepts only positive integers
     /// - `end` will not be included while creating the array. Hence the array range is `start..=(end - 1)`
+    ///
+    /// ## Panics
+    /// Check function `NdArray<T, N>::range(...)` or click [here](https://github.com/noobsiecoder/ndim/blob/main/src/core.rs#L271)
     ///
     /// ## Example
     ///
@@ -364,6 +376,8 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
     ///
     /// ## Note
     /// - `end` will not be included while creating the array. Hence the array range is `start..=(end - 1)`
+    /// ## Panics
+    /// Check function `NdArray<T, N>::range(...)` or click [here](https://github.com/noobsiecoder/ndim/blob/main/src/core.rs#L271)
     ///
     /// ## Example
     ///
@@ -383,10 +397,12 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
         Self::range((ranges.0, ranges.1, 0))
     }
 
-    /// Create a sized array with `start` and `end` values within `isize` range and a step value of range `usize`
+    /// Create a sized array with `start` and `end` values within `isize` range and a step value of range in `usize`
     ///
     /// ## Note
     /// - `end` will not be included while creating the array. Hence the array range is `start..=(end - 1)`
+    /// ## Panics
+    /// Check function `NdArray<T, N>::range(...)` or click [here](https://github.com/noobsiecoder/ndim/blob/main/src/core.rs#L271)
     ///
     /// ## Example
     ///
@@ -429,7 +445,7 @@ impl<T: Debug + Copy + Default, const N: usize> NdArray<T, N> {
         let len: usize = vec.len();
         let ptr: *mut T = vec[..].as_mut_ptr();
         let strides: SizedArray<N> = Self::stride(&shape);
-        std::mem::forget(vec);
+        std::mem::forget(vec); // prevents the Vec<T> from being dropped, ensuring the buffer remains valid
 
         NdArray {
             ptr,
@@ -570,8 +586,8 @@ impl<T, const N: usize> IndexMut<SizedArray<N>> for NdArray<T, N> {
 /// fn main() {
 ///     {
 ///         let arr = NdArray::<u16, 2>::new();
-///         // `arr` as it goes out of scope here
 ///         // Drop implementation is called
+///         // `arr` as it goes out of scope here
 ///     }
 ///     // `arr` is not accessible anymore
 /// }
@@ -592,8 +608,8 @@ impl<T, const N: usize> Drop for NdArray<T, N> {
 mod core_ndim_t {
     use crate::core::{Array, Array2, Array3, NdArray};
 
-    // Test for zeros creation in a 1-D sized array
-    // Try to access the value in the memory at location (x, y) and mutate it
+    // Test for the creation of zeros in an NdArray
+    // Access the memory at location (x, y) and mutate it
     #[test]
     fn zeros_2dim_t() {
         let shape: [usize; 2] = [2, 2];
@@ -604,8 +620,8 @@ mod core_ndim_t {
         assert_eq!(data[[1, 1]], 12);
     }
 
-    // Test for ones creation in a 2-D sized array
-    // Try to access the value in the memory at location (x, y) and mutate it
+    // Test for the creation of ones in an NdArray
+    // Access the memory at location (x, y) and mutate it
     #[test]
     fn ones_2dim_t() {
         let shape: [usize; 2] = [2, 2];
@@ -616,7 +632,7 @@ mod core_ndim_t {
         assert_eq!(data[[1, 1]], 12);
     }
 
-    // Test NdArray<T, N>::from(...) for a 3-D sized array of type u32
+    // Test NdArray<T, N>::from(...) for a 3-D NdArray of type u32
     // Check if the memory set with shape is correct
     #[test]
     fn from_3dim_u32_t() {
@@ -640,8 +656,8 @@ mod core_ndim_t {
         }
     }
 
-    // Test NdArray<T, N>::from(...) for a 3-D sized array of type i32
-    // Check if strides created are correct
+    // Test NdArray<T, N>::from(...) for a 3-D NdArray of type i32
+    // Check if the strides created are correct
     // Check if the memory set with shape is correct
     #[test]
     fn from_3dim_i32_t() {
@@ -663,8 +679,8 @@ mod core_ndim_t {
         }
     }
 
-    // Test NdArray<T, N>::from(...) for a 3-D sized array of type f32
-    // Check if strides created are correct
+    // Test NdArray<T, N>::from(...) for a 3-D NdArray of type f32
+    // Check if the strides created are correct
     // Check if the memory set with shape is correct
     #[test]
     fn from_3dim_f32_t() {
@@ -687,8 +703,8 @@ mod core_ndim_t {
     }
 
     // TODO T > u16: needs faster processing time
-    // Test NdArray<T, N>::arange(...) for a 1-D sized array
-    // Check if length and shape created are correct
+    // Test NdArray<T, N>::arange(...) for a 1-D NdArray
+    // Check if the length and the shape created are correct
     // Check if the memory set with shape is correct
     #[test]
     fn arange_1dim_t() {
@@ -706,8 +722,8 @@ mod core_ndim_t {
         }
     }
 
-    // Test NdArray<T, N>::arange(...) for a 2-D sized array
-    // Check if length and shape created are correct
+    // Test NdArray<T, N>::arange(...) for a 2-D NdArray
+    // Check if the length and the shape created are correct
     // Check if the memory set with shape is correct
     #[test]
     fn arange_2dim_t() {
@@ -730,9 +746,9 @@ mod core_ndim_t {
         }
     }
 
-    // Test NdArray<T, N>::arange(...) for a 3-D sized array
+    // Test NdArray<T, N>::arange(...) for a 3-D NdArray
     // Reshape the NdArray and check with the new shape
-    // Check if length created is correct
+    // Check if the length created is correct
     // Check if the memory set with shape is correct
     #[test]
     fn arange_3dim_t() {
@@ -767,7 +783,7 @@ mod core_ndim_t {
         }
     }
 
-    // Test NdArray<T, N>::reshape(...) for a 2-D sized array
+    // Test NdArray<T, N>::reshape(...) for a 2-D NdArray
     #[test]
     fn reshape_2dim_t() {
         let range: usize = u16::MAX as usize;
@@ -790,7 +806,7 @@ mod core_ndim_t {
         assert_eq!(*data.shape(), new_shape);
     }
 
-    // Test NdArray<T, N>::reshape(...) for a 3-D sized array
+    // Test NdArray<T, N>::reshape(...) for a 3-D NdArray
     #[test]
     fn reshape_3dim_t() {
         let range: usize = u16::MAX as usize;
