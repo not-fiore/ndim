@@ -88,3 +88,4 @@
 /// + [`NdArray::<T, N>::ones(shape: [usize; N])`](https://docs.rs/ndim/latest/ndim/core/struct.NdArray.html#method.ones)
 ///     + Create an NdArray with ones
 pub mod core;
+pub mod traits;
