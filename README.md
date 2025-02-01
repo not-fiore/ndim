@@ -1,9 +1,16 @@
+to understand better:
+
+- [ ] why store a raw pointer?
+- [ ] why strides? i know numpy does it that way but i feel like there are 
+      more idiomatic ways of doing it
+
 todo:
 
 - [ ] create and implement the `ArrayLike` trait
 - [ ] generally tidy up the public api (ie removing panics for results)
 - [ ] changing `NdArray` to just `Array`? the current name seems redundant 
       with the const generic parameter
+- [ ] implement common traits from the standard library
 
 # NDim - Rust-based N-Dimensional Array Library
 
