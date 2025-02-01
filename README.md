@@ -1,3 +1,10 @@
+todo:
+
+- [ ] create and implement the `ArrayLike` trait
+- [ ] generally tidy up the public api (ie removing panics for results)
+- [ ] changing `NdArray` to just `Array`? the current name seems redundant 
+      with the const generic parameter
+
 # NDim - Rust-based N-Dimensional Array Library
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
